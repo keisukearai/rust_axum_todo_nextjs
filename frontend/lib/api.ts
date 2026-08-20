@@ -12,8 +12,18 @@ export type TodoPatch = {
 };
 
 // Rust API のベース URL。ブラウザからも直接叩くので NEXT_PUBLIC_ で公開する。
-export const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8080";
+// NEXT_PUBLIC_* はビルド時にバンドルへ埋め込まれるため、本番ビルドの時点で値が要る。
+// 未設定のまま本番に出ると利用者のブラウザが自分の localhost を叩いてしまうので、
+// 開発時だけ既定値を許し、本番ビルドではビルドを失敗させる。
+const configuredApiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+
+if (!configuredApiBaseUrl && process.env.NODE_ENV === "production") {
+  throw new Error(
+    "NEXT_PUBLIC_API_BASE_URL が未設定です。ビルド前に .env.local などで指定してください",
+  );
+}
+
+export const API_BASE_URL = configuredApiBaseUrl ?? "http://localhost:8080";
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`${API_BASE_URL}${path}`, {

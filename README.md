@@ -72,7 +72,12 @@ http://localhost:3000 を開く。
 
 | 変数 | 既定値 | 内容 |
 |---|---|---|
-| `NEXT_PUBLIC_API_BASE_URL` | `http://localhost:8080` | Rust API の場所。ブラウザからも参照する |
+| `NEXT_PUBLIC_API_BASE_URL` | `http://localhost:8080`（開発時のみ） | Rust API の場所。ブラウザからも参照する |
+
+`NEXT_PUBLIC_*` は**ビルド時にバンドルへ埋め込まれる**ので、`next build` の時点で値が要る。
+実行時に環境変数を差し替えても反映されない。未設定のまま本番ビルドすると
+利用者のブラウザが自分の `localhost:8080` を叩いてしまうため、`NODE_ENV=production`
+のビルドでは値が無いと**ビルドを失敗させる**（既定値が効くのは開発時だけ）。
 
 ## 実装メモ
 
@@ -80,6 +85,7 @@ http://localhost:3000 を開く。
   Client Component（`app/todo-app.tsx`）がブラウザから直接 API を叩くため、backend 側に CORS を入れてある。
 - sqlx はコンパイル時検証マクロ（`query!`）を使わず実行時クエリにしている。ビルドに DB 接続が要らない。
 - `PORT` や `CORS_ORIGIN` を変えるときは frontend の `NEXT_PUBLIC_API_BASE_URL` も合わせる。
+- コンテナや別ホストから接続させるなら backend の `HOST` を `0.0.0.0` にする（既定は `127.0.0.1` でローカルのみ）。
 
 ## テスト
 
