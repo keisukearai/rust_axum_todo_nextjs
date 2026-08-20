@@ -90,6 +90,12 @@ http://localhost:3000 を開く。
 ## テスト
 
 ```sh
-cd backend && cargo test
+cd backend && cargo test          # ユニット3件 + 統合18件
 cd frontend && npm run lint && npx tsc --noEmit
 ```
+
+統合テストは `backend/tests/api.rs`。`#[sqlx::test]` がテストごとに使い捨ての DB を作り、
+`db/migrations` を適用して終了後に落とすため、テスト間で状態が混ざらない。HTTP サーバーは
+立てず `tower::ServiceExt::oneshot` で Router を直接叩く。
+
+実行には **CREATE DATABASE 権限のある `DATABASE_URL`** が要る（`backend/.env` を使う）。
